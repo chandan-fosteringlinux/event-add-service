@@ -1,0 +1,36 @@
+package com.notification.notificationService;
+
+import java.util.Map;
+
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+
+import com.notification.client.NotificationClient;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+
+@ApplicationScoped
+public class NotificationServiceImpl implements NotificationService {
+
+    @Inject
+    @RestClient
+    NotificationClient notificationClient;
+    
+    public static class NotificationServiceException extends RuntimeException {
+        public NotificationServiceException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    @Override
+    public Response sendNotification(Map<String, Object> payload) {
+        try {
+            return notificationClient.sendNotification(payload);
+        } catch (WebApplicationException | ProcessingException e) {
+            throw new NotificationServiceException("Failed to call notification service", e);
+        }
+    }
+}
