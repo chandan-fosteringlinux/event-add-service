@@ -60,6 +60,7 @@ public class NotificationRoute extends RouteBuilder {
             
             .doTry()
                 .process(processors.validationProcessor())
+                .log("validation passed for received request")
                 .process(processors.buildNotificationPayloadProcessor())
                 .log("Sending to UPSHOT: ${body}")
                 .to("bean:NotificationBean?method=addExchange")

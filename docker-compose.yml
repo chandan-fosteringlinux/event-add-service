@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # gRPC for OTLP
+      - "55681:55681" # legacy OTLP (optional)
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  quarkus-app:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+      - "9000:9000" # Prometheus metrics
+    depends_on:
+      - otel-collector
+      - prometheus
+    environment:
+      - JAVA_OPTIONS=-Dquarkus.http.port=8080
