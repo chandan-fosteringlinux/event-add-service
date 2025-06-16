@@ -25,16 +25,16 @@ public class NotificationProcessors {
     @ConfigProperty(name = "auth.apiKey")
     String apiKey;
 
-    public Processor trackingProcessor() {
-        return exchange -> {
-            String requestID = exchange.getIn().getHeader("requestID", String.class);
-                if (requestID == null) {
-                    requestID = UUID.randomUUID().toString();
-                    exchange.getIn().setHeader("requestID", requestID);
-                }
-            MDC.put("requestID", requestID);
-        };
-    }
+    // public Processor trackingProcessor() {
+    //     return exchange -> {
+    //         String requestID = exchange.getIn().getHeader("requestID", String.class);
+    //             if (requestID == null) {
+    //                 requestID = UUID.randomUUID().toString();
+    //                 exchange.getIn().setHeader("requestID", requestID);
+    //             }
+    //         MDC.put("requestID", requestID);
+    //     };
+    // }
 
 public Processor sendResponseProcessor() {
     return exchange -> {

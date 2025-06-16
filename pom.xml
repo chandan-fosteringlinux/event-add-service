@@ -98,10 +98,10 @@
 </dependency>
 
 <!-- OpenTelemetry Tracing -->
-    <!-- <dependency>
+    <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-opentelemetry</artifactId>
-    </dependency> -->
+    </dependency>
     
     <!-- Micrometer Prometheus Metrics -->
     <dependency>

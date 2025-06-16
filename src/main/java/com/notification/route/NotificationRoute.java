@@ -31,7 +31,7 @@ public class NotificationRoute extends RouteBuilder {
     public void configure() {
         // Configure MDC logging
         getContext().setUseMDCLogging(true);
-        getContext().setMDCLoggingKeysPattern("requestID,userId,event");
+        getContext().setMDCLoggingKeysPattern("userId,event");
         
         // Configure sensitive data masking
         configureMasking();
@@ -55,7 +55,7 @@ public class NotificationRoute extends RouteBuilder {
         // Processing route
         from("direct:callAddNotification")
             .routeId("notification-processing-route")
-            .process(processors.trackingProcessor())
+            // .process(processors.trackingProcessor())
             .log("Request received: ${body}")
             
             .doTry()
@@ -68,7 +68,7 @@ public class NotificationRoute extends RouteBuilder {
                 
                 // Handle non-2xx responses
                 .choice()
-                    .when(header(Exchange.HTTP_RESPONSE_CODE).isGreaterThanOrEqualTo(300))
+                    .when(header(Exchange.HTTP_RESPONSE_CODE).isNotEqualTo(200))
                         .throwException(new NotificationServiceImpl.NotificationServiceException(
                             "Downstream service error: ${header.CamelHttpResponseCode}", null))
                 .end()
