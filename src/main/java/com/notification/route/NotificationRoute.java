@@ -68,12 +68,12 @@ public class NotificationRoute extends RouteBuilder {
                 
                 // Handle non-2xx responses
                 .choice()
-                    .when(header(Exchange.HTTP_RESPONSE_CODE).isNotEqualTo(200))
+                    .when(header(Exchange.HTTP_RESPONSE_CODE).isGreaterThanOrEqualTo(300))
                         .throwException(new NotificationServiceImpl.NotificationServiceException(
                             "Downstream service error: ${header.CamelHttpResponseCode}", null))
                 .end()
                 
-                .process(processors.sendResponseProcessor())
+                .process(processors.SendResponseProcessor())
 
             .endDoTry()
             

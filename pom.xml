@@ -104,7 +104,7 @@
     </dependency>
     
     <!-- Micrometer Prometheus Metrics -->
-    <dependency>
+    <dependency>            
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
     </dependency>

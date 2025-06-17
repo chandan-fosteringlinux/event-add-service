@@ -102,13 +102,12 @@ public Processor sendResponseProcessor() {
         };
     }
 
-    public Processor ResponseProcessor() {
+    public Processor SendResponseProcessor() {
         return exchange -> {
-            String requestId = exchange.getIn().getHeader("requestID", String.class);
+            // String requestId = exchange.getIn().getHeader("requestID", String.class);
             Map<String, Object> response = Map.of(
                 "message", "Notification processed successfully",
-                "status", "success",
-                "requestId", requestId
+                "status", "success"
             );
             exchange.getIn().setBody(response);
         };
