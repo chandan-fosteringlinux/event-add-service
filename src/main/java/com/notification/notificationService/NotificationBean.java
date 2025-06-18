@@ -9,6 +9,10 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.ws.rs.core.Response;
 
+/**
+ * CDI Bean that acts as a Camel `bean:` endpoint to send notifications.
+ * Uses the `NotificationService` to send requests and handle the HTTP response.
+ */
 @ApplicationScoped
 @Named("NotificationBean")
 public class NotificationBean {
@@ -16,7 +20,7 @@ public class NotificationBean {
     @Inject
     NotificationService notificationService;
 
-    public void addExchange(Exchange exchange) {
+    public void SendNotificationBean(Exchange exchange) {
     @SuppressWarnings("unchecked")
     Map<String, Object> payload = exchange.getIn().getBody(Map.class);
 

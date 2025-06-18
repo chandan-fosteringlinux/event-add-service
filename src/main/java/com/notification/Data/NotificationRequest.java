@@ -8,6 +8,10 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/**
+ * Represents the incoming JSON payload for notification requests.
+ * Includes validation constraints for each field.
+ */
 @Data
 public class NotificationRequest {
 
