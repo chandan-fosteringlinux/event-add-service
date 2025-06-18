@@ -1,56 +1,27 @@
-// package com.notification.Data;
-// import java.util.Map;
+package com.notification.Data;
 
-// import jakarta.validation.constraints.NotNull;
-// import jakarta.validation.constraints.Size;
 
-// public class NotificationRequest {
+import java.util.Map;
 
-//     @NotNull(message = "User ID is required")
-//     @Size(min = 2, max = 40, message = "User ID must be between 2 and 40 characters")
-//     private String userId;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
 
-//     @NotNull(message = "Platform is required")
-//     @Size(min = 1, max = 20, message = "Platform must be between 1 and 20 characters")
-//     private String platform;
+@Data
+public class NotificationRequest {
 
-//     @NotNull(message = "Event name is required")
-//     @Size(min = 2, max = 40, message = "Event name must be between 2 and 40 characters")
-//     private String eventName;
+    @NotNull
+    @Size(min = 10, max = 10)
+    private String userId;
 
-//     @NotNull(message = "Event attributes are required")
-//     private Map<String, Object> eventAttributes;
+    @NotNull
+    @Pattern(regexp = "^[a-z]+([A-Z][a-z]+)*$", message = "must be in camel case (e.g., webApp)")
+    private String platform;
 
-//     // Getters and Setters
-//     public String getUserId() {
-//         return userId;
-//     }
+    @NotNull
+    private String eventName;
 
-//     public void setUserId(String userId) {
-//         this.userId = userId;
-//     }
-
-//     public String getPlatform() {
-//         return platform;
-//     }
-
-//     public void setPlatform(String platform) {
-//         this.platform = platform;
-//     }
-
-//     public String getEventName() {
-//         return eventName;
-//     }
-
-//     public void setEventName(String eventName) {
-//         this.eventName = eventName;
-//     }
-
-//     public Map<String, Object> getEventAttributes() {
-//         return eventAttributes;
-//     }
-
-//     public void setEventAttributes(Map<String, Object> eventAttributes) {
-//         this.eventAttributes = eventAttributes;
-//     }
-// }
+    @NotNull
+    private Map<String, Object> eventAttributes;
+}

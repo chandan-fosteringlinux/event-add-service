@@ -19,11 +19,6 @@ public class NotificationServiceImpl implements NotificationService {
     @RestClient
     NotificationClient notificationClient;
     
-    public static class NotificationServiceException extends RuntimeException {
-        public NotificationServiceException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
 
     @Override
     public Response sendNotification(Map<String, Object> payload) {
