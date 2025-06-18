@@ -17,6 +17,11 @@ import com.notification.processors.NotificationProcessors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+
+/**
+ * This class defines the main route for processing notifications using Apache Camel.
+ * It includes message validation, transformation, error handling, and logging.
+ */
 @ApplicationScoped
 public class NotificationRoute extends RouteBuilder {
 
@@ -44,7 +49,7 @@ public class NotificationRoute extends RouteBuilder {
                 .log("Validation passed for received request")
                 .process(processors.buildNotificationPayloadProcessor())
                 .log("Sending to UPSHOT: ${body}")
-                .to("bean:NotificationBean?method=addExchange")                               
+                .to("bean:NotificationBean?method=SendNotificationBean")                               
                 .process(processors.sendResponseProcessor())
                 .log("Sending to status-topic: ${body}")
                 .to("kafka:status-topic?brokers=localhost:9092");
@@ -77,6 +82,10 @@ public class NotificationRoute extends RouteBuilder {
 }
 
 
+ /**
+     * Applies sensitive field masking for logs based on log level.
+     * Fields such as apiKey, appId, and accountId are masked in logs to avoid leakage of sensitive information.
+     */
     private void configureMasking() {
         if (!"DEBUG".equalsIgnoreCase(maskingLevel)) {
             Set<String> keywords = new HashSet<>();

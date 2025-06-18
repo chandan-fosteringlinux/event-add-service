@@ -11,6 +11,10 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+/**
+ * REST client interface used to send notification data to an external service.
+ * Uses MicroProfile REST client annotations.
+ */
 @Path("/v1/events")
 @RegisterRestClient
 @Consumes(MediaType.APPLICATION_JSON)

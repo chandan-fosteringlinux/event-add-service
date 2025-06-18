@@ -19,6 +19,10 @@ import io.opentelemetry.api.trace.SpanContext;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.validation.ConstraintViolation;
 
+/**
+ * This class contains Camel `Processor` implementations used within the Camel routes
+ * for transforming requests, generating responses, and handling validation errors.
+ */
 @ApplicationScoped
 public class NotificationProcessors {
 

@@ -12,6 +12,10 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
+/**
+ * Implementation of the `NotificationService` interface that makes
+ * an HTTP call to the downstream notification client.
+ */
 @ApplicationScoped
 public class NotificationServiceImpl implements NotificationService {
 
