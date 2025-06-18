@@ -1,17 +1,23 @@
 package com.notification.processors;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.component.bean.validator.BeanValidationException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.MDC;
 
-import com.notification.Data.ValidationUtils;
+import com.notification.Data.NotificationRequest;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.validation.ConstraintViolation;
 
 @ApplicationScoped
 public class NotificationProcessors {
@@ -25,108 +31,87 @@ public class NotificationProcessors {
     @ConfigProperty(name = "auth.apiKey")
     String apiKey;
 
-    // public Processor trackingProcessor() {
-    //     return exchange -> {
-    //         String requestID = exchange.getIn().getHeader("requestID", String.class);
-    //             if (requestID == null) {
-    //                 requestID = UUID.randomUUID().toString();
-    //                 exchange.getIn().setHeader("requestID", requestID);
-    //             }
-    //         MDC.put("requestID", requestID);
-    //     };
-    // }
-
 public Processor sendResponseProcessor() {
     return exchange -> {
-        String requestId = exchange.getIn().getHeader("requestID", String.class);
+        // Build response
         Map<String, Object> response = Map.of(
             "message", "Notification processed successfully",
             "status", "success",
-            "requestId", requestId
+            "traceId", getTraceId()
         );
+
         exchange.getIn().setBody(response);
     };
 }
 
+public String getTraceId() {
+        Span currentSpan = Span.current();
+        SpanContext spanContext = currentSpan.getSpanContext();
+        return spanContext.isValid() ? spanContext.getTraceId() : "no-trace-id";
+}
 
-    @SuppressWarnings("unchecked")
-    public Processor buildNotificationPayloadProcessor() {
+
+public Processor buildNotificationPayloadProcessor() {
         return exchange -> {
-            Map<String, Object> input = exchange.getIn().getBody(Map.class);
-            
-            // Add contextual info to logs
-            MDC.put("userId", (String) input.get("userId"));
-            MDC.put("event", (String) input.get("eventName"));
-            
-            String userId = (String) input.get("userId");
-            String platform = (String) input.get("platform");
-            String eventName = (String) input.get("eventName");
-            Map<String, Object> eventAttributes = (Map<String, Object>) input.get("eventAttributes");
+                NotificationRequest input = exchange.getIn().getBody(NotificationRequest.class);
+                MDC.put("userId", input.getUserId());
+                MDC.put("event", input.getEventName());
 
-            String eventId = UUID.randomUUID().toString();
-            long timestamp = System.currentTimeMillis();
-            int tzOffset = TimeZone.getDefault().getRawOffset();
+                Map<String, Object> payload = Map.of(
+                    "auth", Map.of(
+                        "appId", appId,
+                        "accountId", accountId,
+                        "apiKey", apiKey
+                    ),
+                    "data", createDataPayload(input)
+                );
 
-            Map<String, Object> auth = new HashMap<>();
-            auth.put("appId", appId);
-            auth.put("accountId", accountId);
-            auth.put("apiKey", apiKey);
-
-            Map<String, Object> data = new HashMap<>();
-            data.put("appuid", userId);
-            data.put("userId", userId);
-            data.put("eventId", eventId);
-            data.put("sessionId", eventId);
-            data.put("platform", platform);
-            data.put("eventName", eventName);
-            data.put("eventAttributes", eventAttributes);
-            data.put("startTime", timestamp);
-            data.put("endTime", timestamp);
-            data.put("tzoffset", tzOffset);
-
-            Map<String, Object> finalPayload = new HashMap<>();
-            finalPayload.put("auth", auth);
-            finalPayload.put("data", data);
-
-            exchange.getIn().setBody(finalPayload);
+                exchange.getIn().setBody(payload);
         };
+    }
+
+    private Map<String, Object> createDataPayload(NotificationRequest input) {
+        String eventId = UUID.randomUUID().toString();
+        long timestamp = System.currentTimeMillis();
+        
+        return Map.of(
+            "appuid", input.getUserId(),
+            "userId", input.getUserId(),
+            "eventId", eventId,
+            "sessionId", eventId,
+            "platform", input.getPlatform(),
+            "eventName", input.getEventName(),
+            "eventAttributes", input.getEventAttributes(),
+            "startTime", timestamp,
+            "endTime", timestamp,
+            "tzoffset", TimeZone.getDefault().getRawOffset()
+        );
     }
     
     
 
-    public Processor validationProcessor() {
-        return exchange -> {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> payload = exchange.getIn().getBody(Map.class);
-            ValidationUtils.validateNotificationRequest(payload);
-        };
-    }
-
-    public Processor SendResponseProcessor() {
-        return exchange -> {
-            // String requestId = exchange.getIn().getHeader("requestID", String.class);
-            Map<String, Object> response = Map.of(
-                "message", "Notification processed successfully",
-                "status", "success"
-            );
-            exchange.getIn().setBody(response);
-        };
-    }
-
-    // @Inject
-    // NotificationValidator notificationValidator;
-
-    // @Inject
-    // CamelContext camelContext;
-
-    // public Processor validationProcessor() {
-    //     return exchange -> {
-    //         NotificationRequest request = exchange.getIn().getBody(NotificationRequest.class);
-    //         notificationValidator.validate(request);  // 💡 Validates here
-    //       String json = camelContext.getTypeConverter().convertTo(String.class, request);
-    //         exchange.getIn().setBody(json);  
-    //     };
-    // }
+public Processor ExceptionResponseProcessor() {
+    return exchange -> {
+        Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+        String message = "Validation error";
+        
+        if (exception instanceof BeanValidationException bve) {
+            Set<ConstraintViolation<Object>> violations = bve.getConstraintViolations();
+            if (!violations.isEmpty()) {
+                message = violations.stream()
+                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                    .collect(Collectors.joining("; "));
+            }
+        }
+        
+        Map<String, String> response = Map.of(
+            "message", message,
+            "status", "fail",
+            "traceId", getTraceId()
+        );
+        exchange.getMessage().setBody(response);
+    };
+}
 
 
 }
