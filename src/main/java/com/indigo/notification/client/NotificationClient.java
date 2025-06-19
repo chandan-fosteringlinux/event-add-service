@@ -1,4 +1,4 @@
-package com.notification.client;
+package com.indigo.notification.client;
 
 import java.util.Map;
 

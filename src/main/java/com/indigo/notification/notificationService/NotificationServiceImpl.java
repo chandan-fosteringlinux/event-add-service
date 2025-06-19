@@ -1,10 +1,10 @@
-package com.notification.notificationService;
+package com.indigo.notification.notificationService;
 
 import java.util.Map;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-import com.notification.client.NotificationClient;
+import com.indigo.notification.client.NotificationClient;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
