@@ -1,4 +1,4 @@
-package com.notification.notificationService;
+package com.indigo.notification.notificationService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
