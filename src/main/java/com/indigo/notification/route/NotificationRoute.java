@@ -35,6 +35,7 @@ public class NotificationRoute extends RouteBuilder {
     String maskingLevel;
 
     @Inject
+    public
     NotificationProcessors processors;
 
     @Override
