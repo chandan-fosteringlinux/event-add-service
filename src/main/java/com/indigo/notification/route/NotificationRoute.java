@@ -1,3 +1,5 @@
+
+
 package com.indigo.notification.route;
 
 import java.util.HashSet;
@@ -7,6 +9,8 @@ import java.util.Set;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.bean.validator.BeanValidationException;
+import org.apache.camel.component.kafka.KafkaConstants;
+import org.apache.camel.component.kafka.consumer.KafkaManualCommit;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.spi.MaskingFormatter;
 import org.apache.camel.support.processor.DefaultMaskingFormatter;
@@ -58,9 +62,20 @@ public class NotificationRoute extends RouteBuilder {
             .log("Sending to status-topic: ${body}")
             .to("{{kafka.status.topic.uri}}").id("mainStatusEndpoint") // ADDED ID
             .process(exchange -> {
-                // ... manual commit logic ...
+                KafkaManualCommit manual = exchange.getIn().getHeader(
+                    KafkaConstants.MANUAL_COMMIT,
+                    KafkaManualCommit.class
+                );
+                if (manual != null) {
+                    manual.commit();
+                    log.info("allowManualCommit=true → Manual commit successful for partition {}",
+                        exchange.getIn().getHeader(KafkaConstants.PARTITION));
+                } else {
+                    log.warn("KafkaManualCommit is NULL → Is allowManualCommit=false?");
+                }
             })
-            .log("Processing complete - offset committed");        
+            .log("Processing complete - offset committed");
+        
     }
 
     private void configureExceptionHandling() {
