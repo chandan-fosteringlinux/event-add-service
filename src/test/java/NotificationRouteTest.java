@@ -3,6 +3,8 @@ import java.util.Properties;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.kafka.KafkaConstants;
+import org.apache.camel.component.kafka.consumer.KafkaManualCommit;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.support.SimpleRegistry;
@@ -11,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.indigo.notification.notificationService.NotificationBean;
@@ -116,4 +119,27 @@ public class NotificationRouteTest extends CamelTestSupport {
         Exchange exchange = mockStatus.getExchanges().get(0);
         assertNotNull(exchange.getMessage().getBody());
     }
+
+    @Test
+public void testManualCommitBlockExecution() throws Exception {
+    MockEndpoint mockStatus = getMockEndpoint("mock:status-topic");
+    mockStatus.expectedMessageCount(1);
+
+    // Create a mock KafkaManualCommit
+    KafkaManualCommit mockManualCommit = mock(KafkaManualCommit.class);
+
+    // Send message with KafkaManualCommit header
+    template.send("direct:test-input", exchange -> {
+        exchange.getIn().setBody(TEST_JSON);
+        exchange.getIn().setHeader(KafkaConstants.MANUAL_COMMIT, mockManualCommit);
+        exchange.getIn().setHeader(KafkaConstants.PARTITION, 0);
+    });
+
+    mockStatus.assertIsSatisfied();
+
+    // Verify that commit() was invoked
+    verify(mockManualCommit).commit();
+}
+
+
 }
