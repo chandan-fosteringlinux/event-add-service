@@ -20,7 +20,7 @@ public class NotificationBean {
     @Inject
     NotificationService notificationService;
 
-    public void SendNotificationBean(Exchange exchange) {
+public void SendNotificationBean(Exchange exchange) {
     @SuppressWarnings("unchecked")
     Map<String, Object> payload = exchange.getIn().getBody(Map.class);
 
@@ -30,12 +30,16 @@ public class NotificationBean {
         exchange.getMessage().setBody(response.readEntity(String.class));
 
         if (status != 200) {
-                // Throw custom exception for non-200 responses
-                throw new NotificationServiceException("Downstream service error. HTTP Status: " + status);
-            }
+            // Preserve the original exception message
+            throw new NotificationServiceException("Downstream service error. HTTP Status: " + status);
+        }
+    }
+    catch (NotificationServiceException e) {
+        // Re-throw without wrapping to preserve original message
+        throw e;
     }
     catch (Exception e) {
-        // Handle exceptions from the notification service
+        // Handle other exceptions
         throw new NotificationServiceException("Failed to process notification", e);
     }
 }

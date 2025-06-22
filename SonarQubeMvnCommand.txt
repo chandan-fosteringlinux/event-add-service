@@ -1,0 +1,5 @@
+mvn clean verify sonar:sonar \
+  -Dsonar.projectKey=NotificatoinService \
+  -Dsonar.projectName='NotificatoinService' \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.token=sqp_7e860bd64f6bd7f08b95876cf88dca852381a8a2
